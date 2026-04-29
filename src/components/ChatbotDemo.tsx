@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Send, Bot, Sparkles, Loader2 } from 'lucide-react';
-import { chatWithAI } from '../lib/localAI';
+import { chatWithAI, getChatbotGreeting } from '../lib/localAI';
 
 interface Message {
   text: string;
@@ -15,7 +15,6 @@ interface ChatbotDemoProps {
   context: string;
 }
 
-// Componente para efecto de escritura en mensajes del bot
 function TypingMessage({ text, delay = 200 }: { text: string; delay?: number }) {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,7 +25,7 @@ function TypingMessage({ text, delay = 200 }: { text: string; delay?: number }) 
       const timeout = setTimeout(() => {
         setDisplayedText(prev => prev + text[currentIndex]);
         setCurrentIndex(prev => prev + 1);
-      }, 15); // Velocidad ultra-rápida (antes 200ms, ahora 15ms)
+      }, 15);
       return () => clearTimeout(timeout);
     } else {
       setIsComplete(true);
@@ -52,17 +51,20 @@ export default function ChatbotDemo({ isOpen, onClose, title, context }: Chatbot
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const prevTitleRef = useRef<string>('');
 
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      setMessages([
-        {
-          text: `¡Hola! Soy el asistente inteligente de ${title}. Ariadna me ha diseñado para mostrarte cómo la IA puede optimizar este proceso. ¿En qué puedo ayudarte hoy?`,
-          type: 'bot',
-        },
-      ]);
+    if (isOpen) {
+      const titleChanged = prevTitleRef.current !== title;
+      if (titleChanged || messages.length === 0) {
+        const greeting = getChatbotGreeting(context);
+        setMessages([{ text: greeting, type: 'bot' }]);
+        setInput('');
+        setIsTyping(false);
+        prevTitleRef.current = title;
+      }
     }
-  }, [isOpen, title, messages.length]);
+  }, [isOpen, title, context]);
 
   useEffect(() => {
     if (scrollRef.current) {
