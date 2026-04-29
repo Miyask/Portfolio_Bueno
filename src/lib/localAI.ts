@@ -174,3 +174,65 @@ export async function chatWithAI(message: string, context: string): Promise<stri
   console.log("Respuesta:", response.substring(0, 50) + '...');
   return response;
 }
+
+export function analyzeText(text: string): { intent: string; sentiment: string; entities: string[] } {
+  const lower = text.toLowerCase();
+
+  const intentPatterns: [string[], string][] = [
+    [['comprar', 'precio', 'coste', 'presupuesto', 'contratar', 'buy', 'price', 'cost'], 'Intención Comercial'],
+    [['ayuda', 'problema', 'error', 'fallo', 'no funciona', 'help', 'issue', 'bug'], 'Solicitud de Soporte'],
+    [['cómo', 'como', 'qué es', 'que es', 'explica', 'how', 'what is', 'explain'], 'Consulta Informativa'],
+    [['hola', 'buenas', 'hey', 'hi', 'hello', 'buenos días'], 'Saludo / Social'],
+    [['quiero', 'necesito', 'busco', 'want', 'need', 'looking for'], 'Expresión de Necesidad'],
+    [['gracias', 'genial', 'perfecto', 'thanks', 'great', 'awesome'], 'Feedback Positivo'],
+    [['mal', 'horrible', 'pésimo', 'bad', 'terrible', 'awful'], 'Queja'],
+    [['proyecto', 'desarrollo', 'implementar', 'crear', 'project', 'develop', 'build'], 'Consulta Técnica'],
+  ];
+
+  let intent = 'Consulta General';
+  for (const [keywords, label] of intentPatterns) {
+    if (keywords.some(k => lower.includes(k))) {
+      intent = label;
+      break;
+    }
+  }
+
+  const positiveWords = ['bien', 'genial', 'excelente', 'perfecto', 'bueno', 'increíble', 'fantástico', 'great', 'good', 'excellent', 'amazing', 'love', 'wonderful', 'gracias', 'thanks'];
+  const negativeWords = ['mal', 'problema', 'error', 'fallo', 'horrible', 'pésimo', 'terrible', 'bad', 'awful', 'hate', 'worst', 'broken', 'fail'];
+
+  let posScore = 0;
+  let negScore = 0;
+  for (const w of positiveWords) { if (lower.includes(w)) posScore++; }
+  for (const w of negativeWords) { if (lower.includes(w)) negScore++; }
+
+  let sentiment = 'Neutral';
+  if (posScore > negScore) sentiment = 'Positivo';
+  else if (negScore > posScore) sentiment = 'Negativo';
+
+  const entityPatterns: [string[], string][] = [
+    [['ia', 'inteligencia artificial', 'ai', 'artificial intelligence', 'machine learning', 'ml'], 'IA'],
+    [['python', 'javascript', 'typescript', 'react', 'node', 'fastapi'], 'Programación'],
+    [['chatbot', 'bot', 'asistente', 'assistant', 'agente', 'agent'], 'Chatbots'],
+    [['datos', 'data', 'base de datos', 'database', 'sql', 'vector'], 'Datos'],
+    [['web', 'frontend', 'backend', 'api', 'servidor', 'server'], 'Web'],
+    [['rag', 'retrieval', 'embeddings', 'pinecone', 'langchain'], 'RAG'],
+    [['empresa', 'negocio', 'company', 'business', 'startup'], 'Negocios'],
+    [['diseño', 'design', 'ux', 'ui', 'interfaz', 'interface'], 'Diseño'],
+    [['cloud', 'aws', 'gcp', 'azure', 'docker', 'kubernetes'], 'Cloud'],
+    [['logística', 'logistica', 'envío', 'envio', 'delivery', 'logistics'], 'Logística'],
+  ];
+
+  const entities: string[] = [];
+  for (const [keywords, label] of entityPatterns) {
+    if (keywords.some(k => lower.includes(k))) {
+      entities.push(label);
+    }
+  }
+
+  if (entities.length === 0) {
+    const words = text.split(/\s+/).filter(w => w.length > 4);
+    entities.push(...words.slice(0, 3).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()));
+  }
+
+  return { intent, sentiment, entities: entities.slice(0, 5) };
+}
