@@ -41,6 +41,7 @@ import ChatbotDemo from './components/ChatbotDemo';
 import FloatingParticles from './components/FloatingParticles';
 import TypingEffect from './components/TypingEffect';
 import AnimatedCounter from './components/AnimatedCounter';
+import { analyzeText } from './lib/localAI';
 
 export default function App() {
   const [activeLang, setActiveLang] = useState<'es' | 'en'>('es');
@@ -299,16 +300,21 @@ export default function App() {
           </motion.div>
           
           <div className="hidden md:flex items-center gap-10 font-headline font-medium text-sm tracking-widest uppercase">
-            {['home', 'proyectos', 'sobre-mi', 'contacto'].map((item, i) => (
+            {[
+              { href: 'home', key: 'nav_home' },
+              { href: 'proyectos', key: 'nav_projects' },
+              { href: 'sobre-mi', key: 'nav_about' },
+              { href: 'contacto', key: 'nav_contact' },
+            ].map((item, i) => (
               <motion.a
-                key={item}
+                key={item.href}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                href={`#${item}`}
+                href={`#${item.href}`}
                 className="text-white/50 hover:text-primary transition-all relative group"
               >
-                {t[`nav_${item.replace('-', '_')}` as keyof typeof t]}
+                {t[item.key as keyof typeof t]}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
               </motion.a>
             ))}
@@ -783,15 +789,11 @@ export default function App() {
                       onClick={async () => {
                         if (!playgroundText.trim()) return;
                         setIsAnalyzing(true);
-                        // Simulated AI Analysis
+                        const result = analyzeText(playgroundText);
                         setTimeout(() => {
-                          setAnalysisResult({
-                            intent: "Consulta Técnica",
-                            sentiment: "Positivo",
-                            entities: ["IA", "Desarrollo", "Innovación"]
-                          });
+                          setAnalysisResult(result);
                           setIsAnalyzing(false);
-                        }, 1500);
+                        }, 800);
                       }}
                       className="absolute bottom-6 right-6 btn-primary py-3 px-8 text-sm"
                       disabled={isAnalyzing}
@@ -931,22 +933,13 @@ export default function App() {
                   const email = formData.get('email') as string;
                   const message = formData.get('message') as string;
 
-                  try {
-                    const response = await fetch('http://localhost:3001/api/contacts', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ name, email, message })
-                    });
-
-                    if (response.ok) {
-                      alert('✅ ¡Mensaje enviado correctamente! Ariadna te contactará pronto.');
-                      (e.target as HTMLFormElement).reset();
-                    } else {
-                      alert('❌ Error al enviar el mensaje. Inténtalo de nuevo.');
-                    }
-                  } catch (error) {
-                    alert('❌ No se pudo conectar con el servidor. Asegúrate de que el servidor de contactos está funcionando.');
-                  }
+                  const subject = encodeURIComponent(`Portfolio Contact: ${name}`);
+                  const body = encodeURIComponent(`Nombre: ${name}\nEmail: ${email}\n\nMensaje:\n${message}`);
+                  window.open(`mailto:ariadnart2005@gmail.com?subject=${subject}&body=${body}`, '_blank');
+                  alert(activeLang === 'es'
+                    ? '¡Se abrirá tu cliente de correo para enviar el mensaje! Si no se abre, envía un email a ariadnart2005@gmail.com'
+                    : 'Your email client will open to send the message! If it doesn\'t open, send an email to ariadnart2005@gmail.com');
+                  (e.target as HTMLFormElement).reset();
                 }}>
                   <div className="space-y-4">
                     <label className="text-xs uppercase tracking-[0.3em] text-white/30 font-bold">{t.form_name}</label>
