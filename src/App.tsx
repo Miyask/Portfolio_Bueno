@@ -604,7 +604,7 @@ export default function App() {
 
                   <div className="flex items-center gap-6">
                     <button 
-                      onClick={() => openDemo('Correos Express AI', 'Agente inteligente para resolución autónoma de incidencias logísticas.')}
+                      onClick={() => openDemo('Correos Express AI', 'correos-express')}
                       className="btn-primary px-10"
                     >
                       {t.btn_demo}
@@ -644,7 +644,7 @@ export default function App() {
 
                   <div className="flex items-center gap-6">
                     <button 
-                      onClick={() => openDemo('SEUR Smart Logistics', 'Sistema de optimización logística con modelos predictivos.')}
+                      onClick={() => openDemo('SEUR Smart Logistics', 'seur-logistics')}
                       className="btn-primary px-10"
                     >
                       {t.btn_demo}
@@ -690,7 +690,7 @@ export default function App() {
                   <p className="text-white/50 text-2xl leading-relaxed font-light">{t.p3_desc}</p>
                   <div className="flex flex-wrap gap-6">
                     <button 
-                      onClick={() => openDemo('Telefónica Neural Search', 'Arquitectura RAG avanzada para búsqueda semántica masiva.')}
+                      onClick={() => openDemo('Telefónica Neural Search', 'telefonica-neural')}
                       className="btn-primary px-12 py-5 text-lg"
                     >
                       {t.btn_chat_demo}
@@ -926,7 +926,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <form className="space-y-8" onSubmit={async (e) => {
+                <form className="space-y-8" onSubmit={(e) => {
                   e.preventDefault();
                   const formData = new FormData(e.currentTarget);
                   const name = formData.get('name') as string;
@@ -935,11 +935,13 @@ export default function App() {
 
                   const subject = encodeURIComponent(`Portfolio Contact: ${name}`);
                   const body = encodeURIComponent(`Nombre: ${name}\nEmail: ${email}\n\nMensaje:\n${message}`);
-                  window.open(`mailto:ariadnart2005@gmail.com?subject=${subject}&body=${body}`, '_blank');
-                  alert(activeLang === 'es'
-                    ? '¡Se abrirá tu cliente de correo para enviar el mensaje! Si no se abre, envía un email a ariadnart2005@gmail.com'
-                    : 'Your email client will open to send the message! If it doesn\'t open, send an email to ariadnart2005@gmail.com');
-                  (e.target as HTMLFormElement).reset();
+                  window.location.href = `mailto:ariadnart2005@gmail.com?subject=${subject}&body=${body}`;
+                  setTimeout(() => {
+                    alert(activeLang === 'es'
+                      ? '¡Se abrirá tu cliente de correo para enviar el mensaje! Si no se abre, envía un email a ariadnart2005@gmail.com'
+                      : 'Your email client will open to send the message! If it doesn\'t open, send an email to ariadnart2005@gmail.com');
+                    (e.target as HTMLFormElement).reset();
+                  }, 500);
                 }}>
                   <div className="space-y-4">
                     <label className="text-xs uppercase tracking-[0.3em] text-white/30 font-bold">{t.form_name}</label>
